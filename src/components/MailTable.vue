@@ -1,8 +1,20 @@
 <template>
-  <BulkActionBar :emails="unarchivedEmails"></BulkActionBar>
+  <button
+    @click="selectScreen('inbox')"
+    :disabled="selectedScreen === 'inbox'"
+  >
+    Inbox
+  </button>
+  <button
+    @click="selectScreen('archive')"
+    :disabled="selectedScreen === 'archive'"
+  >
+    Archive
+  </button>
+  <BulkActionBar :emails="filteredEmails"></BulkActionBar>
   <table class="mail-table">
     <tbody>
-      <tr v-for="email in unarchivedEmails" 
+      <tr v-for="email in filteredEmails" 
           :key="email.id"
           :class="[email.read ? 'read': '', 'clickable']">
         <td>
@@ -19,7 +31,20 @@
         <td class="date" @click="openEmail(email)">
           {{format(new Date(email.sentAt), 'MMM do yyyy')}}
         </td>
-        <td><button @click="archiveEmail(email)">Archive</button></td>
+        <td>
+          <button
+            v-if="!email.archived"
+            @click="toggleArchiveEmail(email)"
+          >
+            Archive
+          </button>
+          <button
+            v-if="email.archived"
+            @click="toggleArchiveEmail(email)"
+          >
+            Unarchive
+          </button>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -51,10 +76,15 @@ export default {
       format,
       emails: ref(emails),
       openedEmail: ref(null),
-      emailSelection: useEmailSelection()
+      emailSelection: useEmailSelection(),
+      selectedScreen: ref('inbox')
     }
   },
   methods: {
+    selectScreen(newScreen) {
+      this.selectedScreen = newScreen;
+      this.emailSelection.clear();
+    },
     openEmail(email) {
       this.openedEmail = email;
       if(email) {
@@ -62,8 +92,8 @@ export default {
         this.updateEmail(email);
       }
     },
-    archiveEmail(email) {
-      email.archived = true;
+    toggleArchiveEmail(email) {
+      email.archived = !email.archived;
       this.updateEmail(email);
     },
     closeModal() {
@@ -93,9 +123,11 @@ export default {
         return e1.sentAt < e2.sentAt ? 1 : -1
       });
     },
-    unarchivedEmails(){
-      return this.sortedEmails.filter(e => !e.archived);
-    }
+    filteredEmails(){
+      return this.selectedScreen === "inbox"
+        ? this.sortedEmails.filter(e => !e.archived)
+        : this.sortedEmails.filter(e => e.archived);
+    },
   }
 }
 </script>

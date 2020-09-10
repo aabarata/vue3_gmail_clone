@@ -46,12 +46,12 @@ export default {
   setup(props) {
     let emailSelection = useEmailSelection();
     let numberSelected = computed(()=> emailSelection.emails.size);
-    let numberEmails = props.emails.length;
+    let numberEmails = computed(()=> props.emails.length);
 
     //We need to call .value when we refer to a computed reference
-    let allEmailsSelected = computed(() => numberSelected.value === numberEmails);
+    let allEmailsSelected = computed(() => numberSelected.value === numberEmails.value);
     let someEmailsSelected = computed(
-      () => numberSelected.value > 0 && numberSelected.value < numberEmails
+      () => numberSelected.value > 0 && numberSelected.value < numberEmails.value
     );
 
     let bulkSelect = function() {
